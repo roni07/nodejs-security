@@ -20,5 +20,10 @@ module.exports = catchAsync(async (req, res, next) => {
     const user = await User.findById(decoded.id);
     if (!user) return next(new AppError('The user belonging to this token does not exist', 401));
 
+    if (user.changedPasswordAfter(decoded.iat)) {
+        return next(new AppError('Recently password changed. Please login again', 401));
+    }
+
+    req.user = user;
     next();
 });
