@@ -8,7 +8,7 @@ module.exports = function () {
         {
             useNewUrlParser: true,
             useCreateIndex: true,
-            useFindAndModify: true,
+            useFindAndModify: false,
             useUnifiedTopology: true
         }).then(() => console.log('DB connection successful'));
 }
