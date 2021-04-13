@@ -15,7 +15,7 @@ require('../config/server')();
 module.exports = function (app) {
     app.use(helmet()); // set security http headers
 
-    app.use('/api', rateLimit); //preventing brute force attack
+    app.use('/api/auth/login', rateLimit); //preventing brute force attack
 
     app.use(express.json({limit: '10kb'})); // maximum 10 Kilobytes data can be accepted by contained body
 

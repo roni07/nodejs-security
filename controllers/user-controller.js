@@ -5,6 +5,7 @@ const catchAsync = require('../utils/catch-async-error');
 const AppError = require('../utils/app-error');
 const auth = require('../middleware/auth-middleware');
 const jwt = require('jsonwebtoken');
+const APISearch = require('../utils/api-search');
 
 const signToken = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -15,14 +16,23 @@ const signToken = id => {
 const filterObj = (obj, ...allowFields) => {
     const newObj = {};
     Object.keys(obj).forEach(el => {
-       if (allowFields.includes(el)) newObj[el] = obj[el];
+        if (allowFields.includes(el)) newObj[el] = obj[el];
     });
     return newObj;
 }
 
 router.get('/list', auth, catchAsync(async (req, res, next) => {
-    const users = await User.find({active: false});
-    return res.status(200).send(users);
+
+    const apiSearch = new APISearch(User.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .pagination();
+
+    const totalElements = await User.countDocuments(apiSearch.searchValue);
+
+    const users = await apiSearch.query;
+    return res.status(200).send({page: apiSearch.pageNumber, size: apiSearch.pageSize,totalElements, content: users});
 }));
 
 router.get('/by-id/:id', catchAsync(async (req, res, next) => {
@@ -60,8 +70,8 @@ router.put('/update-password/:id', catchAsync(async (req, res, next) => {
 router.put('/update/:id', catchAsync(async (req, res, next) => {
     const filterBody = filterObj(req.body, 'name', 'email');
     const user = await User.findByIdAndUpdate(req.params.id, filterBody, {
-       new: true,
-       runValidators: true
+        new: true,
+        runValidators: true
     });
 
     if (!user) return next(new AppError(`User not found with id ${req.params.id}`, 404));

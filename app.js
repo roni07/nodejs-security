@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const apiRoutes = require('./routes/api-routes');
 
 process.on('uncaughtException', err => {
     console.log('UNCAUGHT EXCEPTION! Shutting down....');
@@ -7,7 +8,7 @@ process.on('uncaughtException', err => {
     process.exit(1);
 });
 
-require('./routes/api-routes')(app);
+apiRoutes(app);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => console.log(`App is running at port ${port}...`));
