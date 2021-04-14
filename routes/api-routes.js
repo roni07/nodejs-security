@@ -1,8 +1,8 @@
 const morgan = require('morgan');
 const express = require('express');
-const tour = require('../controllers/tour-controller');
-const user = require('../controllers/user-controller');
-const auth = require('../controllers/auth-controller');
+const tourRoutes = require('./tour-routes');
+const userRoutes = require('./user-routes');
+const authRoutes = require('./auth-routes');
 const AppError = require('../utils/app-error')
 const globalErrorHandler = require('../error-handler/global-error-handler');
 const rateLimit = require('../middleware/rate-limit');
@@ -26,9 +26,9 @@ module.exports = function (app) {
 
     app.use(morgan('dev'));
 
-    app.use('/api/auth', auth);
-    app.use('/api/users', user);
-    app.use('/api/tours', tour);
+    app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/tours', tourRoutes);
 
     app.all('*', (req, res, next) => {
         next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
