@@ -1,4 +1,3 @@
-const catchAsync = require('../utils/catch-async-error');
 const sharp = require('sharp');
 const {uploadResizedImage} = require('./image-upload');
 
@@ -7,7 +6,7 @@ exports.uploadMultipleResizedImage = uploadResizedImage.fields([
     {name: 'images', maxCount: 3}
 ])
 
-exports.resizeMultipleImage = catchAsync(async (req, res, next) => {
+exports.resizeMultipleImage = async (req, res, next) => {
 
     if (!req.files.coverImage) return next();
 
@@ -34,4 +33,4 @@ exports.resizeMultipleImage = catchAsync(async (req, res, next) => {
     }));
 
     next();
-});
+};

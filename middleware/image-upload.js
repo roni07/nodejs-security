@@ -1,6 +1,5 @@
 const multer = require('multer');
 const sharp = require('sharp');
-const catchAsync = require('../utils/catch-async-error');
 const AppError = require('../utils/app-error');
 const fs = require('fs')
 
@@ -37,7 +36,7 @@ exports.uploadResizedImage = multer({
     fileFilter: multerFilter
 });
 
-exports.resizeImage = catchAsync(async (req, res, next) => {
+exports.resizeImage = async (req, res, next) => {
     if (!req.file) return next();
 
     const imageFolderName = baseUrlFormat(req.baseUrl);
@@ -51,4 +50,4 @@ exports.resizeImage = catchAsync(async (req, res, next) => {
         .toFile(`public/img/${imageFolderName}/${req.file.filename}`);
 
     next();
-});
+};

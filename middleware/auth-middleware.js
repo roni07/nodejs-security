@@ -1,10 +1,9 @@
 const AppError = require("../utils/app-error");
-const catchAsync = require('../utils/catch-async-error');
 const jwt = require('jsonwebtoken');
 const User = require("../models/user-model");
 const {promisify} = require('util');
 
-module.exports = catchAsync(async (req, res, next) => {
+module.exports.authenticate = async (req, res, next) => {
     let token = '';
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -26,4 +25,12 @@ module.exports = catchAsync(async (req, res, next) => {
 
     req.user = user;
     next();
-});
+};
+
+module.exports.hasPermission = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) return next(new AppError('You do not have permission', 403));
+
+        next();
+    }
+}

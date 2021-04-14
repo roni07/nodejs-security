@@ -31,7 +31,7 @@ const handleCastErrorDB = error => {
 
 const handleDuplicateError = error => {
     // we can check */Forest Hike/* using the error parameter
-    return new AppError(`Duplicate field value for ${error.keyValue.name}. Please use another value..!`, 400);
+    return new AppError(`Duplicate field value ${error.keyValue.email}. Please use another value..!`, 400);
 }
 
 const handleValidationError = error => {

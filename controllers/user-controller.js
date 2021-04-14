@@ -1,18 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user-model');
-const catchAsync = require('../utils/catch-async-error');
 const AppError = require('../utils/app-error');
-const auth = require('../middleware/auth-middleware');
+const {authenticate, hasPermission} = require('../middleware/auth-middleware');
 const jwt = require('jsonwebtoken');
 const APISearch = require('../utils/api-search');
 const {uploadResizedImage, resizeImage} = require('../middleware/image-upload');
-
-const signToken = id => {
-    return jwt.sign({id}, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN
-    });
-};
+const generateToken = require('../utils/generate-token');
 
 const filterObj = (obj, ...allowFields) => {
     const newObj = {};
@@ -22,7 +16,7 @@ const filterObj = (obj, ...allowFields) => {
     return newObj;
 }
 
-router.get('/list', auth, catchAsync(async (req, res, next) => {
+router.get('/list', authenticate, hasPermission('admin'), async (req, res, next) => {
 
     const apiSearch = new APISearch(User.find(), req.query)
         .filter()
@@ -34,21 +28,21 @@ router.get('/list', auth, catchAsync(async (req, res, next) => {
 
     const users = await apiSearch.query;
     return res.status(200).send({page: apiSearch.pageNumber, size: apiSearch.pageSize, totalElements, content: users});
-}));
+});
 
-router.get('/by-id/:id', catchAsync(async (req, res, next) => {
+router.get('/by-id/:id', async (req, res, next) => {
     const user = await User.findById(req.params.id);
     if (!user) return next(new AppError(`User not found by id ${req.params.id}`, 404));
     return res.status(200).send(user);
-}));
+});
 
-router.post('/create', catchAsync(async (req, res, next) => {
+router.post('/create', async (req, res, next) => {
     const user = new User(req.body);
     await user.save();
     return res.status(201).send(user);
-}));
+});
 
-router.put('/update-password/:id', catchAsync(async (req, res, next) => {
+router.put('/update-password/:id', async (req, res, next) => {
     const user = await User.findById(req.params.id).select('+password');
     if (!user) return next(new AppError(`User not found by id ${req.params.id}`, 404));
 
@@ -63,14 +57,14 @@ router.put('/update-password/:id', catchAsync(async (req, res, next) => {
     // User.findByIdAndUpdate will not work for correct password checker as well as
     // passwordConfirm validation
     await user.save();
-    const token = signToken(user._id);
+    const token = generateToken(user);
 
-    return res.status(200).send({token, user});
-}));
+    return res.status(200).send({token, data: user});
+});
 
-router.put('/update/:id', uploadResizedImage.single('photo'), resizeImage, catchAsync(async (req, res, next) => {
+router.put('/update/:id', uploadResizedImage.single('photo'), resizeImage, async (req, res, next) => {
 
-    const filterBody = filterObj(req.body, 'name', 'email');
+    const filterBody = filterObj(req.body, 'name', 'email'); // specific field allowed for update
     if (req.file) filterBody.photo = req.file.filename;
 
     const user = await User.findByIdAndUpdate(req.params.id, filterBody, {
@@ -81,12 +75,12 @@ router.put('/update/:id', uploadResizedImage.single('photo'), resizeImage, catch
     if (!user) return next(new AppError(`User not found with id ${req.params.id}`, 404));
 
     return res.status(200).send({data: user});
-}));
+});
 
-router.delete('/delete/:id', catchAsync(async (req, res, next) => {
+router.delete('/delete/:id', async (req, res, next) => {
     const user = await User.findByIdAndUpdate(req.params.id, {active: false});
     if (!user) return next(new AppError(`User not found with id ${req.params.id}`, 404));
     return res.status(200).send(`ID: ${req.params.id} user deleted successfully`);
-}));
+});
 
 module.exports = router;
