@@ -1,17 +1,23 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const catchAsync = require('../utils/catch-async-error');
+const AppError = require('../utils/app-error');
+const fs = require('fs')
 
-const diskMulterStorage = multer.diskStorage({
+const baseUrlFormat = baseUrl => baseUrl.replace('/api/', '');
+
+const diskMulterStorage = multer.diskStorage({// for normal photo
     destination: (req, file, cb) => {
-        cb(null, 'public/img/users');
+        cb(null, `public/img/${baseUrlFormat(req.baseUrl)}`);
     },
     filename: (req, file, cb) => {
+        const imageName = baseUrlFormat(req.baseUrl);
         const ext = file.mimetype.split('/')[1];
-        cb(null, `user-${req.params.id}-${Date.now()}.${ext}`);
+        cb(null, `${imageName.substring(0, imageName.length -1)}-${req.params.id}-${Date.now()}.${ext}`);
     }
 });
 
-const memoryMulterStorage = multer.memoryStorage();
+const memoryMulterStorage = multer.memoryStorage(); // for resize photo
 
 const multerFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image')) {
@@ -21,26 +27,28 @@ const multerFilter = (req, file, cb) => {
     }
 };
 
-exports.uploadPhoto = multer({
-   storage: diskMulterStorage,
-   fileFilter: multerFilter
+exports.uploadImage = multer({
+    storage: diskMulterStorage,
+    fileFilter: multerFilter
 });
 
-exports.uploadResizedPhoto = multer({
+exports.uploadResizedImage = multer({
     storage: memoryMulterStorage,
     fileFilter: multerFilter
 });
 
-exports.resizePhoto = (req, res, next) => {
+exports.resizeImage = catchAsync(async (req, res, next) => {
     if (!req.file) return next();
 
-    req.file.filename = `user-${req.params.id}-${Date.now()}.webp`;
+    const imageFolderName = baseUrlFormat(req.baseUrl);
 
-    sharp(req.file.buffer)
+    req.file.filename = `${imageFolderName.substring(0, imageFolderName.length -1)}-${req.params.id}-${Date.now()}.webp`;
+
+    await sharp(req.file.buffer)
         .resize(500, 500)
-        .toFormat('jpeg')
+        .toFormat('webp')
         .jpeg({quality: 90})
-        .toFile(`public/img/users/${req.file.filename}`);
+        .toFile(`public/img/${imageFolderName}/${req.file.filename}`);
 
     next();
-};
+});

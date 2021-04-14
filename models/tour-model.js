@@ -26,7 +26,13 @@ const tourSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'A tour must have a price'],
         min: [1, 'Tour price must be greater than zero']
-    }
+    },
+    coverImage: {
+        type: String
+    },
+    images: [{
+        type: String
+    }]
 });
 
 const Tour = mongoose.model('Tour', tourSchema);

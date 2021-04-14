@@ -3,6 +3,7 @@ const router = express.Router();
 const Tour = require('../models/tour-model');
 const catchAsync = require('../utils/catch-async-error');
 const AppError = require('../utils/app-error');
+const {uploadMultipleResizedImage, resizeMultipleImage} = require('../middleware/tour-image-uploader');
 
 router.get('/list', catchAsync(async (req, res, next) => {
    const tours = await Tour.find();
@@ -22,5 +23,16 @@ router.post('/create', catchAsync(async (req, res, next) => {
    await tour.save();
    return res.status(201).send(tour);
 }));
+
+router.put('/update/:id', uploadMultipleResizedImage, resizeMultipleImage, catchAsync(async (req, res, next) => {
+
+   const tour = await Tour.findOneAndUpdate(req.params.id, req.body, {
+      new: true
+   });
+
+   if (!tour) return next(new AppError(`Tour is not find with id ${req.params.id}`, 404));
+
+   return res.status(200).send(tour);
+}))
 
 module.exports = router;

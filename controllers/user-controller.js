@@ -6,7 +6,7 @@ const AppError = require('../utils/app-error');
 const auth = require('../middleware/auth-middleware');
 const jwt = require('jsonwebtoken');
 const APISearch = require('../utils/api-search');
-const {uploadResizedPhoto, resizePhoto} = require('../middleware/image-upload');
+const {uploadResizedImage, resizeImage} = require('../middleware/image-upload');
 
 const signToken = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -68,7 +68,7 @@ router.put('/update-password/:id', catchAsync(async (req, res, next) => {
     return res.status(200).send({token, user});
 }));
 
-router.put('/update/:id', uploadResizedPhoto.single('photo'), resizePhoto, catchAsync(async (req, res, next) => {
+router.put('/update/:id', uploadResizedImage.single('photo'), resizeImage, catchAsync(async (req, res, next) => {
 
     const filterBody = filterObj(req.body, 'name', 'email');
     if (req.file) filterBody.photo = req.file.filename;

@@ -27,8 +27,8 @@ module.exports = function (app) {
     app.use(morgan('dev'));
 
     app.use('/api/auth', auth);
-    app.use('/api/user', user);
-    app.use('/api/tour', tour);
+    app.use('/api/users', user);
+    app.use('/api/tours', tour);
 
     app.all('*', (req, res, next) => {
         next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
