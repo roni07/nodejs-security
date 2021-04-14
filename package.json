@@ -15,10 +15,13 @@
     "express-mongo-sanitize": "^2.0.2",
     "express-rate-limit": "^5.2.6",
     "helmet": "^4.4.1",
+    "html-to-text": "^7.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.12.3",
     "morgan": "^1.10.0",
     "multer": "^1.4.2",
+    "nodemailer": "^6.5.0",
+    "pug": "^3.0.2",
     "sharp": "^0.28.1",
     "validator": "^13.5.2",
     "xss-clean": "^0.1.1"

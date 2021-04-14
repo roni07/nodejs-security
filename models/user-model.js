@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -26,7 +27,7 @@ const userSchema = new mongoose.Schema({
     },
     passwordConfirm: {
         type: String,
-        required: [true, 'Please input password confirmation field'],
+        required: [true, 'Please input password confirm field'],
         validate: {
             validator: function (el) {
                 return el === this.password;
@@ -39,7 +40,9 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
         select: false
-    }
+    },
+    passwordResetToken: String,
+    passwordResetExpire: Date
 });
 
 //this middleware only retrieve active user from database
@@ -70,6 +73,19 @@ userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {
         return jwtTimestamp < changedTimeStamp;
     }
     return false;
+}
+
+userSchema.methods.createPasswordResetToken = function () { //instance method
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    this.passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    this.passwordResetExpire = Date.now() + 10 * 60 * 1000;
+
+    return resetToken;
 }
 
 const User = mongoose.model('User', userSchema);
