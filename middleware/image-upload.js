@@ -1,18 +1,23 @@
 const multer = require('multer');
 const sharp = require('sharp');
 const AppError = require('../utils/app-error');
-const fs = require('fs')
+const fs = require('fs');
 
 const baseUrlFormat = baseUrl => baseUrl.replace('/api/', '');
 
 const diskMulterStorage = multer.diskStorage({// for normal photo
+
     destination: (req, file, cb) => {
-        cb(null, `public/img/${baseUrlFormat(req.baseUrl)}`);
+
+        const path = `public/img/${baseUrlFormat(req.baseUrl)}`;
+        fs.mkdirSync(path, {recursive: true});
+
+        cb(null, path);
     },
     filename: (req, file, cb) => {
         const imageName = baseUrlFormat(req.baseUrl);
         const ext = file.mimetype.split('/')[1];
-        cb(null, `${imageName.substring(0, imageName.length -1)}-${req.params.id}-${Date.now()}.${ext}`);
+        cb(null, `${imageName.substring(0, imageName.length - 1)}-${req.params.id}-${Date.now()}.${ext}`);
     }
 });
 
@@ -41,13 +46,16 @@ exports.resizeImage = async (req, res, next) => {
 
     const imageFolderName = baseUrlFormat(req.baseUrl);
 
-    req.file.filename = `${imageFolderName.substring(0, imageFolderName.length -1)}-${req.params.id}-${Date.now()}.webp`;
+    const path = `public/img/${baseUrlFormat(req.baseUrl)}`;
+    fs.mkdirSync(path, {recursive: true});
+
+    req.file.filename = `${imageFolderName.substring(0, imageFolderName.length - 1)}-${req.params.id}-${Date.now()}.webp`;
 
     await sharp(req.file.buffer)
         .resize(500, 500)
         .toFormat('webp')
         .jpeg({quality: 90})
-        .toFile(`public/img/${imageFolderName}/${req.file.filename}`);
+        .toFile(`${path}/${req.file.filename}`);
 
     next();
 };

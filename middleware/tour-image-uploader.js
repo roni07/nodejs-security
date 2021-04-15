@@ -1,5 +1,6 @@
 const sharp = require('sharp');
 const {uploadResizedImage} = require('./image-upload');
+const fs = require('fs');
 
 exports.uploadMultipleResizedImage = uploadResizedImage.fields([
     {name: 'coverImage', maxCount: 1},
@@ -10,13 +11,16 @@ exports.resizeMultipleImage = async (req, res, next) => {
 
     if (!req.files.coverImage) return next();
 
+    const path = `public/img/tours`;
+    fs.mkdirSync(path, {recursive: true});
+
     req.body.coverImage = `tour-${req.params.id}-${Date.now()}-cover.webp`;
 
     await sharp(req.files.coverImage[0].buffer)
         .resize(500, 500)
         .toFormat('webp')
         .webp({quality: 90})
-        .toFile(`public/img/tours/${req.body.coverImage}`);
+        .toFile(`${path}/${req.body.coverImage}`);
 
     if (!req.files.images || req.files.images === 'undefined') return next();
     req.body.images = [];
@@ -27,7 +31,7 @@ exports.resizeMultipleImage = async (req, res, next) => {
             .resize(2000, 1333)
             .toFormat('webp')
             .webp({quality: 90})
-            .toFile(`public/img/tours/${filename}`);
+            .toFile(`${path}/${filename}`);
 
         req.body.images.push(filename);
     }));
