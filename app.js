@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
+
+require('express-async-errors') // catch all async call
+
 const apiRoutes = require('./routes/api-routes');
-const catchAsyncError = require('./utils/catch-async-error');
 
 process.on('uncaughtException', err => {
     console.log('UNCAUGHT EXCEPTION! Shutting down....');
@@ -9,7 +11,6 @@ process.on('uncaughtException', err => {
     process.exit(1);
 });
 
-catchAsyncError();
 apiRoutes(app);
 
 const port = process.env.PORT || 8080;

@@ -3,7 +3,7 @@ const AppError = require('../utils/app-error');
 const sendErrorDev = (err, res) => {
     res.status(err.statusCode).send({
         status: err.status,
-        // error: err,
+        error: err,
         message: err.message,
         stack: err.stack,
     });
