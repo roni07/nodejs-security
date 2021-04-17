@@ -46,7 +46,7 @@ class APISearch {
 
     pagination() {
         const page = this.queryString.page * 1 || 1;
-        const size = this.queryString.size * 1 || 2;
+        const size = this.queryString.size * 1 || 10;
         const skipValue = (page - 1) * size;
         this.query = this.query.skip(skipValue).limit(size);
 

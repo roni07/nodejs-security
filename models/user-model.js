@@ -50,7 +50,8 @@ const userSchema = new mongoose.Schema({
     passwordResetExpire: Date
 });
 
-//this middleware only retrieve active user from database
+
+//this query middleware only retrieve active user from database
 userSchema.pre(/^find/, function (next) {
     this.find({active: {$ne: false}});
     next();
@@ -67,12 +68,12 @@ userSchema.pre('save', async function (next) {
 });
 
 //this function will compare the bcrypt password
-userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {//instance method
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 
 //this function will compare between the token creation and password change time
-userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {
+userSchema.methods.changedPasswordAfter = function (jwtTimestamp) {//instance method
     if (this.passwordChangedAt) {
         const changedTimeStamp = this.passwordChangedAt.getTime() / 1000;
         return jwtTimestamp < changedTimeStamp;

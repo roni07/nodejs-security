@@ -22,6 +22,7 @@ exports.getUsrList = async (req, res, next) => {
     const totalElements = await User.countDocuments(apiSearch.searchValue);
 
     const users = await apiSearch.query;
+
     return res.status(200).send({page: apiSearch.pageNumber, size: apiSearch.pageSize, totalElements, content: users});
 };
 
