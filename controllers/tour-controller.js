@@ -1,11 +1,11 @@
 const Tour = require('../models/tour-model');
 const AppError = require('../utils/app-error');
-const APISearch = require("../utils/api-search");
+const APISearch = require('../utils/api-search');
+const {tourQuery} = require('../repository/tour-repository');
 
 exports.getTourList = async (req, res, next) => {
 
     // const tours = await Tour.find().populate('guides');
-
     const apiSearch = new APISearch(Tour.find(), req.query)
         .filter()
         .pagination();
@@ -16,6 +16,24 @@ exports.getTourList = async (req, res, next) => {
 
     return res.status(200).send({page: apiSearch.pageNumber, size: apiSearch.pageSize, totalElements, data: {content: tours}
     });
+};
+
+exports.getNewTourList = async (req, res, next) => {
+    let page = req.query.page ? parseInt(req.query.page): 1;
+    let size = req.query.size ? parseInt(req.query.size) : 10;
+
+    if (page < 1 || size < 1) {
+        return res.status(400).send('Page size must be a positive number');
+    }
+
+    const skip = (page - 1) * size;
+    const searchQuery = tourQuery(req.query);
+
+    const totalElements = await Tour.countDocuments(searchQuery);
+
+    const tours = await Tour.find(searchQuery).skip(skip).limit(size);
+
+    return res.status(200).send({page, size, totalElements, content: tours});
 };
 
 exports.getTourById = async (req, res, next) => {

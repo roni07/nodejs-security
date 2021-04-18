@@ -2,6 +2,7 @@ const User = require('../models/user-model');
 const AppError = require('../utils/app-error');
 const APISearch = require('../utils/api-search');
 const generateToken = require('../utils/generate-token');
+const {userQuery} = require('../repository/user-repository');
 
 const filterObj = (obj, ...allowFields) => {
     const newObj = {};
@@ -24,6 +25,24 @@ exports.getUsrList = async (req, res, next) => {
     const users = await apiSearch.query;
 
     return res.status(200).send({page: apiSearch.pageNumber, size: apiSearch.pageSize, totalElements, content: users});
+};
+
+exports.getUsrListNewQuery = async (req, res, next) => {
+    let page = req.query.page ? parseInt(req.query.page): 1;
+    let size = req.query.size ? parseInt(req.query.size) : 10;
+
+    if (page < 1 || size < 1) {
+        return res.status(400).send('Page size must be a positive number');
+    }
+
+    const skip = (page - 1) * size;
+    const searchQuery = userQuery(req.query);
+
+    const totalElements = await User.countDocuments(searchQuery);
+
+    const users = await User.find(searchQuery).skip(skip).limit(size);
+
+    return res.status(200).send({page, size, totalElements, content: users});
 };
 
 exports.getUserById = async (req, res, next) => {

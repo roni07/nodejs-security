@@ -32,9 +32,6 @@ const reviewSchema = new mongoose.Schema({
     }
 );
 
-// Indexing
-reviewSchema.index({rating: 1});
-
 /*reviewSchema.pre(/^find/, function (next) {
     this.populate({
         path: 'tour',
